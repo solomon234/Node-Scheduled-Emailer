@@ -23,13 +23,23 @@ var contactReminderTask = {
 
                     let htmlBody = `${result.recordset[i].f_name}, <br />
                               this is the reminder you request on ${result.recordset[i].currdate}, 
-                              for Customer ${result.recordset[i].cust_id} ${result.recordset[i].msgtext}`;
+                              for Customer ${result.recordset[i].cust_id}${result.recordset[i].loc_id ? '-'+result.recordset[i].loc_id : ''} ${result.recordset[i].msgtext}`;
+
+                    let subject = `Automated Contact Reminder, [${result.recordset[i].cust_id}${result.recordset[i].loc_id ? '-'+result.recordset[i].loc_id : ''}]`;
+
+                    if (!result.recordset[i].cust_id) {
+                        htmlBody = `${result.recordset[i].f_name}, <br />
+                              this is the reminder you request on ${result.recordset[i].currdate}, 
+                              for ${result.recordset[i].pname}  ${result.recordset[i].msgtext}`
+
+                        subject = `Automated Contact Reminder, [${result.recordset[i].pname}]`
+                    }
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
                         to: emailsResult.recordset[0].emailaddr, // list of receivers                        
                         //to: 'smuratov@metrogroupinc.com',
-                        subject: `Automated Contact Reminder, [${result.recordset[i].cust_id}]`, // Subject line
+                        subject: subject, // Subject line
                         html: htmlBody // html body
                     };
 
@@ -47,25 +57,16 @@ var contactReminderTask = {
                     if (sendMailResp) {
                         let req = mainPool.request();
                         let insertResponse = await req
-                            .input('sendname', sql.VarChar, 'Building / Property Manger')
+                            .input('sendname', sql.VarChar, result.recordset[i].u_fname + ' ' + result.recordset[i].u_lname)
                             .input('emailaddr', sql.VarChar, result.recordset[i].emailaddr)
                             .input('ccaddr', sql.VarChar, '')
                             .input('msgtext', sql.VarChar, htmlBody)
-                            .input(
-                                'msubject',
-                                sql.VarChar,
-                                `Automated Contact Reminder [${result.recordset[i].cust_id}]`
-                            )
-                            .input(
-                                'imgpathfil',
-                                sql.VarChar,
-                                ''
-                            )
+                            .input('msubject', sql.VarChar, subject)
                             .input('sentflag', sql.Bit, 1)
                             .input('senttime', sql.DateTime, new Date())
                             .input('cstamp', sql.VarChar, `AUTOSERV${yyyy}${mm}${dd}`)
                             .query(
-                                'INSERT INTO mservice (sendname, emailaddr, ccaddr, msgtext, msubject,imgpathfil,sentflag,senttime,cstamp) VALUES (@sendname, @emailaddr, @ccaddr, @msgtext, @msubject,@imgpathfil,@sentflag,@senttime,@cstamp)'
+                                'INSERT INTO mservice (sendname, emailaddr, ccaddr, msgtext, msubject,sentflag,senttime,cstamp) VALUES (@sendname, @emailaddr, @ccaddr, @msgtext, @msubject,@sentflag,@senttime,@cstamp)'
                             );
                         if (insertResponse.rowsAffected > 0) {
                             console.log('MSERVICE was added succesfully');                        
