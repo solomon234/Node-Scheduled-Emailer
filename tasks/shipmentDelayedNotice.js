@@ -65,7 +65,7 @@ var ShipmentDelayedTask = {
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
-                        to: result.recordset[0].email, // list of receivers                        
+                        to: result.recordset[i].email, // list of receivers                        
                         //to: 'smuratov@metrogroupinc.com',
                         subject: `Shipment Delayed Notice`, // Subject line
                         html: htmlBody // html body

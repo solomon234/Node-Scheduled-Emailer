@@ -18,14 +18,25 @@ var sendMserviceTask = {
             );
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {
-                    
+
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
-                        to: result.recordset[0].emailaddr, // list of receivers                        
+                        to: result.recordset[i].emailaddr, // list of receivers                        
                         //to: 'smuratov@metrogroupinc.com',
+                        cc: result.recordset[i].ccaddr,
                         subject: result.recordset[i].msubject, // Subject line
                         html: result.recordset[i].msgtext // html body
                     };
+
+                    if (fs.existsSync(result.recordset[i].picpathfil)) {
+                        mailOptions.attachments = [
+                            {
+                                filename: taskName + '.pdf',
+                                path: result.recordset[i].picpathfil,
+                                contentType: 'application/pdf'
+                            }
+                        ];
+                    }
 
                     let today = new Date();
                     let dd = today.getDate();
