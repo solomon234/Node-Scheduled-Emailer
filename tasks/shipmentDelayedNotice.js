@@ -14,7 +14,7 @@ var ShipmentDelayedTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                `SELECT mrsls.F_NAME + ' ' + mrsls.L_NAME name
+                `SELECT top 1 mrsls.F_NAME + ' ' + mrsls.L_NAME name
                 ,dbo.MRORDH.*
                 ,mrloc.adr1 locname
                 ,shipalert AS maxfactor
@@ -49,24 +49,23 @@ var ShipmentDelayedTask = {
          `);
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {
-                    let req = mainPool.request();
+                    
+                    let endDate = momentBusinessDays(result.recordset[i].ORDER_DT, 'MM/DD/YYYY').businessAdd(result.recordset[i].maxfactor)._d;
 
-                    let endDate = momentBusinessDays(result.recordset[i].order_dt, 'MM/DD/YYYY').businessAdd(result.recordset[i].maxfactor)._d;
-
-                    let htmlBody = `From: MetroLink Auto-Mail 
+                    let htmlBody = `From: MetroLink Auto-Mail <br />
                               Server To: ${result.recordset[i].name} <br />
                               Subject: Shipment Delay <br />
-                              Copy Customer: ${result.recordset[i].cust_id},${result.recordset[i].name} <br />
-                              Location: ${result.recordset[i].loc_id},${result.recordset[i].locname} <br />
-                              Order #: ${result.recordset[i].order_no} <br />
-                              This message is to notify you that one or more order items have not yet shipped or are still in the process of being invoiced.  
-                              Please note that the Order was entered on ${result.recordset[i].order_dt} and had been scheduled to ship by ${endDate}.  
+                              Copy Customer: ${result.recordset[i].CUST_ID},${result.recordset[i].LOC_ID} <br />
+                              Location: ${result.recordset[i].LOC_ID},${result.recordset[i].locname} <br />
+                              Order #: ${result.recordset[i].ORDER_NO} <br />
+                              This message is to notify you that one or more order items have not yet shipped or are still in the process of being invoiced.  <br />
+                              Please note that the Order was entered on ${result.recordset[i].ORDER_DT.toLocaleDateString()} and had been scheduled to ship by ${endDate.toLocaleDateString()}.  <br />
                               Please contact your Order Processor for updated shipping information. Additional details regarding this Order are available for your review on MetroLink.`;
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
                         to: result.recordset[i].email, // list of receivers                        
-                        //to: 'smuratov@metrogroupinc.com',
+                        // to: 'solomonmuratov@gmail.com',
                         subject: `Shipment Delayed Notice`, // Subject line
                         html: htmlBody // html body
                     };
@@ -89,18 +88,29 @@ var ShipmentDelayedTask = {
                             .input('emailaddr', sql.VarChar, result.recordset[i].email)
                             .input('ccaddr', sql.VarChar, '')
                             .input('msgtext', sql.VarChar, htmlBody)
-                            .input(`Shipment Delayed Notice`
-                            )                            
+                            .input('msubject', sql.VarChar,`Shipment Delayed Notice`)                                                  
                             .input('sentflag', sql.Bit, 1)
                             .input('senttime', sql.DateTime, new Date())
                             .input('cstamp', sql.VarChar, `AUTOSERV${yyyy}${mm}${dd}`)
                             .query(
-                                'INSERT INTO mservice (sendname, emailaddr, ccaddr, msgtext, msubject,imgpathfil,sentflag,senttime,cstamp) VALUES (@sendname, @emailaddr, @ccaddr, @msgtext, @msubject,@sentflag,@senttime,@cstamp)'
+                                'INSERT INTO mservice (sendname, emailaddr, ccaddr, msgtext, msubject,sentflag,senttime,cstamp) VALUES (@sendname, @emailaddr, @ccaddr, @msgtext, @msubject,@sentflag,@senttime,@cstamp)'
                             );
                         if (insertResponse.rowsAffected > 0) {
                             console.log('MSERVICE was added succesfully');                        
+
+                            let req = mainPool.request();
+                            let updateOrderRecord = await req
+                            .input('date', sql.DateTime, new Date())
+                            .input('id_pk', sql.Int, result.recordset[i].Id_pk)
+                            .query(`update MRORDH set WARNMSG_DT = @date where id_pk = @id_pk `);
+
+                            if (updateOrderRecord.rowsAffected > 0) {
+                                console.log('Order update was succesful');                        
+                            }
                         }
                     } 
+
+                    
                 }
                 //Close connection to DB
                 mainPool.close();

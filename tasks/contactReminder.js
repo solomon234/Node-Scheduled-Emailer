@@ -14,7 +14,7 @@ var contactReminderTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                "SELECT U_FNAME, U_LNAME, emailaddr, msgtext, custid, locid, currdate, userid, pname, ccaddr FROM eminders JOIN dbo.USERS ON U_USERID = USERID WHERE eminders.isdeleted = 0 AND CONVERT(VARCHAR(10), futuredate, 112) = CONVERT(VARCHAR(10), getdate(), 112) AND ( senttime is NULL or YEAR(senttime) = 1900)"
+                "SELECT top 1 U_FNAME, U_LNAME, emailaddr, msgtext, custid, locid, currdate, userid, pname, ccaddr FROM eminders JOIN dbo.USERS ON U_USERID = USERID WHERE eminders.isdeleted = 0 AND CONVERT(VARCHAR(10), futuredate, 112) = CONVERT(VARCHAR(10), getdate(), 112) AND ( senttime is NULL or YEAR(senttime) = 1900)"
             );
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {
@@ -35,8 +35,8 @@ var contactReminderTask = {
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
-                        to: result.recordset[i].emailaddr, // list of receivers                        
-                        //to: 'smuratov@metrogroupinc.com',
+                        //to: result.recordset[i].emailaddr, // list of receivers                        
+                        to: 'solomonmuratov@gmail.com',
                         subject: subject, // Subject line
                         html: htmlBody // html body
                     };

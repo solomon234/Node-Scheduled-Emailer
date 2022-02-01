@@ -14,16 +14,16 @@ var sendMserviceTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                `SELECT * FROM mservice WHERE MSUBJECT LIKE '${taskName}%' AND SENTFLAG = 0 AND IsDeleted = 0`
+                `SELECT top 1 * FROM mservice WHERE MSUBJECT LIKE '${taskName}%' AND SENTFLAG = 0 AND IsDeleted = 0`
             );
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
-                        to: result.recordset[i].emailaddr, // list of receivers                        
-                        //to: 'smuratov@metrogroupinc.com',
-                        cc: result.recordset[i].ccaddr,
+                        // to: result.recordset[i].emailaddr, // list of receivers                        
+                        to: 'solomonmuratov@gmail.com',
+                        // cc: result.recordset[i].ccaddr,
                         subject: result.recordset[i].msubject, // Subject line
                         html: result.recordset[i].msgtext // html body
                     };
