@@ -1,27 +1,29 @@
 var { EmailServiceNotifications } = require('../tasks/serviceNotificationEmailer');
 var { EmailContactReminder } = require('../tasks/contactReminder');
-
+var { EmailMservice } = require('../tasks/sendMserviceEmails');
+var { EmailShipmentDelayReminder } = require('../tasks/shipmentDelayedNotice');
 
 module.exports = {
     runTask: (key, config) => {
         switch (key) {
             case 'serviceNotifications':
-                EmailServiceNotifications(config)
+                EmailServiceNotifications(config);
             break;
             case 'contactReminder':
-                EmailContactReminder(config)
+                EmailContactReminder(config);
             break;
             case 'orderAcknowledgement':
-                EmailServiceNotifications(config)
+                EmailMservice('Order Acknowledgement', config);
             break;
             case 'shipmentDelay':
+                EmailShipmentDelayReminder(config);
                 return true
             break;
-            case 'shipmentConfirmation':
-                return true
+            case 'customerContact':
+                EmailMservice('Customer Contact', config);
             break;        
             default:
-                break;
+            break;
         }
         return true;
     }

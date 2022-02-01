@@ -8,7 +8,6 @@ var contactReminderTask = {
         let mainPool = new sql.ConnectionPool(config.db);
         let mainPoolConnect = mainPool.connect();
 
-        let transporter = nodemailer.createTransport(config.smtp);
 
         await mainPoolConnect; //checks if pool is connected
         try {
@@ -19,7 +18,6 @@ var contactReminderTask = {
             );
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {
-                    let req = mainPool.request();
 
                     let htmlBody = `${result.recordset[i].f_name}, <br />
                               this is the reminder you request on ${result.recordset[i].currdate}, 
@@ -37,7 +35,7 @@ var contactReminderTask = {
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
-                        to: emailsResult.recordset[0].emailaddr, // list of receivers                        
+                        to: result.recordset[0].emailaddr, // list of receivers                        
                         //to: 'smuratov@metrogroupinc.com',
                         subject: subject, // Subject line
                         html: htmlBody // html body

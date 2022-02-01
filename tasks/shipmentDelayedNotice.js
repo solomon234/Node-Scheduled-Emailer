@@ -3,13 +3,11 @@ const sql = require('mssql');
 const fs = require('fs');
 var momentBusinessDays = require("moment-business-days")
 
-var contactReminderTask = {
-    EmailContactReminder: async (config) => {
+var ShipmentDelayedTask = {
+    EmailShipmentDelayReminder: async (config) => {
 
         let mainPool = new sql.ConnectionPool(config.db);
         let mainPoolConnect = mainPool.connect();
-
-        let transporter = nodemailer.createTransport(config.smtp);
 
         await mainPoolConnect; //checks if pool is connected
         try {
@@ -67,7 +65,7 @@ var contactReminderTask = {
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
-                        to: emailsResult.recordset[0].email, // list of receivers                        
+                        to: result.recordset[0].email, // list of receivers                        
                         //to: 'smuratov@metrogroupinc.com',
                         subject: `Shipment Delayed Notice`, // Subject line
                         html: htmlBody // html body
@@ -117,4 +115,4 @@ var contactReminderTask = {
         }
     }
 }
-module.exports = contactReminderTask;
+module.exports = ShipmentDelayedTask;
