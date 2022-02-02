@@ -21,9 +21,9 @@ var contactReminderTask = {
 
                     let htmlBody = `${result.recordset[i].f_name}, <br />
                               this is the reminder you request on ${result.recordset[i].currdate}, 
-                              for Customer ${result.recordset[i].cust_id}${result.recordset[i].loc_id ? '-'+result.recordset[i].loc_id : ''} ${result.recordset[i].msgtext}`;
+                              for Customer ${result.recordset[i].cust_id}${result.recordset[i].locid ? '-'+result.recordset[i].locid : ''} ${result.recordset[i].msgtext}`;
 
-                    let subject = `Automated Contact Reminder, [${result.recordset[i].cust_id}${result.recordset[i].loc_id ? '-'+result.recordset[i].loc_id : ''}]`;
+                    let subject = `Automated Contact Reminder, [${result.recordset[i].custid}${result.recordset[i].locid ? '-'+result.recordset[i].locid : ''}]`;
 
                     if (!result.recordset[i].cust_id) {
                         htmlBody = `${result.recordset[i].f_name}, <br />
@@ -55,7 +55,7 @@ var contactReminderTask = {
                     if (sendMailResp) {
                         let req = mainPool.request();
                         let insertResponse = await req
-                            .input('sendname', sql.VarChar, result.recordset[i].u_fname + ' ' + result.recordset[i].u_lname)
+                            .input('sendname', sql.VarChar, result.recordset[i].U_FNAME + ' ' + result.recordset[i].U_LNAME)
                             .input('emailaddr', sql.VarChar, result.recordset[i].emailaddr)
                             .input('ccaddr', sql.VarChar, '')
                             .input('msgtext', sql.VarChar, htmlBody)
