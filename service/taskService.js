@@ -21,6 +21,9 @@ module.exports = {
             break;
             case 'customerContact':
                 EmailMservice('Customer Contact', config);
+            break;     
+            case 'shipmentConfirmation':
+                EmailMservice('Shipment Confirmation', config);
             break;        
             default:
             break;

@@ -5,7 +5,7 @@ const fs = require('fs');
 var sendMserviceTask = {
     EmailMservice: async (taskName, config) => {
 
-        let mainPool = new sql.ConnectionPool(config.db);
+        let mainPool = new sql.ConnectionPool(config.test.active ? config.test : config.prod);
         let mainPoolConnect = mainPool.connect();
 
 
@@ -14,25 +14,24 @@ var sendMserviceTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                `SELECT top 1 * FROM mservice WHERE MSUBJECT LIKE '${taskName}%' AND SENTFLAG = 0 AND IsDeleted = 0`
+                 `SELECT top 1 * FROM mservice WHERE MSUBJECT LIKE '${taskName}%' AND SENTFLAG = 0 AND IsDeleted = 0`                
             );
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
-                        // to: result.recordset[i].emailaddr, // list of receivers                        
-                        to: 'solomonmuratov@gmail.com',
-                        // cc: result.recordset[i].ccaddr,
-                        subject: result.recordset[i].msubject, // Subject line
-                        html: result.recordset[i].msgtext // html body
+                        to: result.recordset[i].EMAILADDR, // list of receivers                        
+                        cc: result.recordset[i].CCADDR,
+                        subject: result.recordset[i].MSUBJECT, // Subject line
+                        html: result.recordset[i].MSGTEXT // html body
                     };
 
-                    if (fs.existsSync(result.recordset[i].picpathfil)) {
+                    if (fs.existsSync(result.recordset[i].PICPATHFIL)) {
                         mailOptions.attachments = [
                             {
                                 filename: taskName + '.pdf',
-                                path: result.recordset[i].picpathfil,
+                                path: result.recordset[i].PICPATHFIL,
                                 contentType: 'application/pdf'
                             }
                         ];
@@ -51,9 +50,11 @@ var sendMserviceTask = {
                     let sendMailResp = await sendmail();
                     if (sendMailResp) {
                         let req = mainPool.request();
-                        let insertResponse = await req                            
+                        let insertResponse = await req   
+                            .input('date', sql.DateTime, new Date())
+                            .input('id_pk', sql.Int, result.recordset[i].Id_pk)                         
                             .query(
-                                `UPDATE mservice SET SentFlag = 1, senttime=${new Date()} where id_pk = ${result.recordset[i].id_pk}`
+                                `UPDATE mservice SET SentFlag = 1, senttime = @date where id_pk = @id_pk`
                             );
                         if (insertResponse.rowsAffected > 0) {
                             console.log('MSERVICE was updated succesfully');                        

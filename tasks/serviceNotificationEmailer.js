@@ -6,7 +6,7 @@ const { sendEmail } = require('../service/emailService');
 var serviceNotificationTask = {
     EmailServiceNotifications: async (config) => {
 
-        let mainPool = new sql.ConnectionPool(config.db);
+        let mainPool = new sql.ConnectionPool(config.test.active ? config.test : config.prod);
         let mainPoolConnect = mainPool.connect();        
 
         await mainPoolConnect; //checks if pool is connected

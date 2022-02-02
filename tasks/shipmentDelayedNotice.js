@@ -6,7 +6,7 @@ var momentBusinessDays = require("moment-business-days")
 var ShipmentDelayedTask = {
     EmailShipmentDelayReminder: async (config) => {
 
-        let mainPool = new sql.ConnectionPool(config.db);
+        let mainPool = new sql.ConnectionPool(config.test.active ? config.test : config.prod);
         let mainPoolConnect = mainPool.connect();
 
         await mainPoolConnect; //checks if pool is connected
@@ -14,7 +14,7 @@ var ShipmentDelayedTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                `SELECT top 1 mrsls.F_NAME + ' ' + mrsls.L_NAME name
+                `SELECT top 10 mrsls.F_NAME + ' ' + mrsls.L_NAME name
                 ,dbo.MRORDH.*
                 ,mrloc.adr1 locname
                 ,shipalert AS maxfactor

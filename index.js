@@ -13,23 +13,34 @@ for (const key in config.tasks) {
     let val = config.tasks[key].value;
     if (!config.tasks[key].active)
         config.tasks[key].duration = '';
-    
+    //useful resource - https://crontab.guru/#52_10_*_*_*
     try {
         switch (config.tasks[key].duration.toLowerCase()) {
             case 'minutes':
                 cron.schedule(`*/${val} * * * *`, () => {
                     console.log(new Date(), key, `Runs every ${val} minutes`);
                     runTask(key, config);
-                });        
-                break;           
-            case 'setHour':
-                cron.schedule(`${val} * * *`, () => {
-                    console.log(`Running a job at ${val.split(' ').join('')}:00 at America/New York timezone`);
+                });    
+                break;
+            case 'sethour':                
+                cron.schedule(`0 ${val} * * *`, () => {
+                    console.log(`Running a job at ${val}:00 at America/New York timezone`);
+                    runTask(key, config);
                   }, {
                     scheduled: true,
                     timezone: "America/New_York"
                   });
-                break;     
+                break;
+            case 'settime':                
+            cron.schedule(`${val} * * *`, () => {
+                let time = val.split(' ');
+                console.log(`Running a job at ${time[1]}:${time[0] == '0' ? '00': time[0] } at America/New York timezone`);
+                runTask(key, config);
+                }, {
+                scheduled: true,
+                timezone: "America/New_York"
+                });
+            break;
             default:
                 break;
         }

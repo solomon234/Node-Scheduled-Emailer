@@ -5,7 +5,7 @@ const fs = require('fs');
 var contactReminderTask = {
     EmailContactReminder: async (config) => {
 
-        let mainPool = new sql.ConnectionPool(config.db);
+        let mainPool = new sql.ConnectionPool(config.test.active ? config.test : config.prod);
         let mainPoolConnect = mainPool.connect();
 
 
@@ -14,7 +14,7 @@ var contactReminderTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                "SELECT top 1 U_FNAME, U_LNAME, emailaddr, msgtext, custid, locid, currdate, userid, pname, ccaddr FROM eminders JOIN dbo.USERS ON U_USERID = USERID WHERE eminders.isdeleted = 0 AND CONVERT(VARCHAR(10), futuredate, 112) = CONVERT(VARCHAR(10), getdate(), 112) AND ( senttime is NULL or YEAR(senttime) = 1900)"
+                "SELECT top 10 eminders.id_pk ,U_FNAME, U_LNAME, emailaddr, msgtext, custid, locid, currdate, userid, pname, ccaddr FROM eminders JOIN dbo.USERS ON U_USERID = USERID WHERE eminders.isdeleted = 0 AND CONVERT(VARCHAR(10), futuredate, 112) = CONVERT(VARCHAR(10), getdate(), 112) AND ( senttime is NULL or YEAR(senttime) = 1900)"
             );
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {
@@ -35,8 +35,8 @@ var contactReminderTask = {
 
                     let mailOptions = {
                         from: '"The Metro Group Inc." <auto-mail@metrogroupinc.com>', // sender address
-                        //to: result.recordset[i].emailaddr, // list of receivers                        
-                        to: 'solomonmuratov@gmail.com',
+                        to: result.recordset[i].emailaddr, // list of receivers                                                
+                        cc: result.recordset[i].ccaddr ? result.recordset[i].ccaddr : '' , // list of copied addr's
                         subject: subject, // Subject line
                         html: htmlBody // html body
                     };
@@ -67,7 +67,17 @@ var contactReminderTask = {
                                 'INSERT INTO mservice (sendname, emailaddr, ccaddr, msgtext, msubject,sentflag,senttime,cstamp) VALUES (@sendname, @emailaddr, @ccaddr, @msgtext, @msubject,@sentflag,@senttime,@cstamp)'
                             );
                         if (insertResponse.rowsAffected > 0) {
-                            console.log('MSERVICE was added succesfully');                        
+                            console.log('MSERVICE was added succesfully');  
+                            
+                            let req = mainPool.request();
+                            let updateOrderRecord = await req
+                            .input('date', sql.DateTime, new Date())
+                            .input('id_pk', sql.Int, result.recordset[i].id_pk)
+                            .query(`update eminders set senttime = @date where id_pk = @id_pk `);
+
+                            if (updateOrderRecord.rowsAffected > 0) {
+                                console.log('Contact Reminder update was successful');                        
+                            }
                         }
                     } 
                 }
