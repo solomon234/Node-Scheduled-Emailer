@@ -14,6 +14,7 @@ for (const key in config.tasks) {
     if (!config.tasks[key].active)
         config.tasks[key].duration = '';
     //useful resource - https://crontab.guru/#52_10_*_*_*
+
     try {
         switch (config.tasks[key].duration.toLowerCase()) {
             case 'minutes':
