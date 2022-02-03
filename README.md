@@ -12,9 +12,9 @@
 ### Setup
 1. Clone repo to local directory 
 2. Edit config/config.json
-a. Set desired DB connection to active
-b. Set smtp creds 
-3. Run npm start
+3. Set desired DB connection to active
+4. Set smtp creds 
+5. Run npm start
 
 
 ### Adding More Tasks
