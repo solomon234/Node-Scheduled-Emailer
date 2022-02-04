@@ -14,7 +14,7 @@ var contactReminderTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                "SELECT top 10 eminders.id_pk ,U_FNAME, U_LNAME, emailaddr, msgtext, custid, locid, currdate, userid, pname, ccaddr FROM eminders JOIN dbo.USERS ON U_USERID = USERID WHERE eminders.isdeleted = 0 AND CONVERT(VARCHAR(10), futuredate, 112) = CONVERT(VARCHAR(10), getdate(), 112) AND ( senttime is NULL or YEAR(senttime) = 1900)"
+                "SELECT top 25 eminders.id_pk ,U_FNAME, U_LNAME, emailaddr, msgtext, custid, locid, currdate, userid, pname, ccaddr FROM eminders JOIN dbo.USERS ON U_USERID = USERID WHERE eminders.isdeleted = 0 AND CONVERT(VARCHAR(10), futuredate, 112) = CONVERT(VARCHAR(10), getdate(), 112) AND ( senttime is NULL or YEAR(senttime) = 1900)"
             );
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {

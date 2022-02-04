@@ -14,7 +14,7 @@ var sendMserviceTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                 `SELECT top 1 * FROM mservice WHERE MSUBJECT LIKE '${taskName}%' AND SENTFLAG = 0 AND IsDeleted = 0`                
+                 `SELECT top 25 * FROM mservice WHERE MSUBJECT LIKE '${taskName}%' AND SENTFLAG = 0 AND IsDeleted = 0`                
             );
             if (result.rowsAffected > 0) {
                 for (let i = 0; i < result.recordset.length; i++) {

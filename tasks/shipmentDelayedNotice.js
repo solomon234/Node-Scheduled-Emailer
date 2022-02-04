@@ -14,7 +14,7 @@ var ShipmentDelayedTask = {
             console.log('Connection Established');
             let req = mainPool.request();
             let result = await req.query(
-                `SELECT top 10 mrsls.F_NAME + ' ' + mrsls.L_NAME name
+                `SELECT top 25 mrsls.F_NAME + ' ' + mrsls.L_NAME name
                 ,dbo.MRORDH.*
                 ,mrloc.adr1 locname
                 ,shipalert AS maxfactor
